@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "PlaygroundsAppTool",
+    products: [
+        .library(name: "PlaygroundsAppToolLibrary", targets: ["PlaygroundsAppToolLibrary"])
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0"),
     ],
@@ -15,7 +18,10 @@ let package = Package(
             name: "PlaygroundsAppTool",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ]
+                "PlaygroundsAppToolLibrary"
+            ],
+            path: "Sources/CLI"
         ),
+        .target(name: "PlaygroundsAppToolLibrary")
     ]
 )
