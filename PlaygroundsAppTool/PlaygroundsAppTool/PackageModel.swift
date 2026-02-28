@@ -104,7 +104,7 @@ public final class PackageModel {
         guard var file = packageFile else { return }
         do {
             let searchStr = ".\(orientation)"
-            if orientations.contains(searchStr) || orientations.contains(searchStr + "(...)") {
+            if orientations.contains(where: { $0 == searchStr || $0.hasPrefix(searchStr + "(") }) {
                 try await file.removeOrientation(orientation)
             } else {
                 try await file.addOrientation(orientation)
@@ -115,6 +115,24 @@ public final class PackageModel {
             self.errorMessage = nil
         } catch {
             self.errorMessage = "Failed to toggle Orientation: \(error.localizedDescription)"
+        }
+    }
+
+    public func setOrientationCondition(_ orientation: String, condition: String?) async {
+        guard var file = packageFile else { return }
+        do {
+            try await file.removeOrientation(orientation)
+            if let condition = condition {
+                try await file.addOrientation("\(orientation)(\(condition))")
+            } else {
+                try await file.addOrientation(orientation)
+            }
+            try await file.write()
+            self.packageFile = file
+            try await refresh()
+            self.errorMessage = nil
+        } catch {
+            self.errorMessage = "Failed to set Orientation condition: \(error.localizedDescription)"
         }
     }
 

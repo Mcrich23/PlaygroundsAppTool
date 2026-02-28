@@ -129,9 +129,25 @@ struct OrientationView: View {
         Form {
             Section(header: Text("Supported Interface Orientations")) {
                 ForEach(allOrientations, id: \.self) { orientation in
-                    let isEnabled = model.orientations.contains(".\(orientation)") || model.orientations.contains(".\(orientation)(...)")
+                    let searchStr = ".\(orientation)"
+                    let match = model.orientations.first(where: { $0 == searchStr || $0.hasPrefix(searchStr + "(") })
+                    let isEnabled = match != nil
                     
-                    Toggle(orientation.capitalized, isOn: Binding(
+                    let conditionLabel: String = if let m = match, m.contains(".when(deviceFamilies: [.pad])") {
+                        " (Pad Only)"
+                    } else if let m = match, m.contains(".when(deviceFamilies: [.phone])") {
+                        " (Phone Only)"
+                    } else if let m = match, m.contains(".when(") {
+                        " (Custom)"
+                    } else {
+                        ""
+                    }
+                    
+                    let isAlways = isEnabled && conditionLabel == ""
+                    let isPadOnly = isEnabled && conditionLabel == " (Pad Only)"
+                    let isPhoneOnly = isEnabled && conditionLabel == " (Phone Only)"
+                    
+                    Toggle(orientation.capitalized + conditionLabel, isOn: Binding(
                         get: { isEnabled },
                         set: { _ in
                             Task {
@@ -139,6 +155,26 @@ struct OrientationView: View {
                             }
                         }
                     ))
+                    .contextMenu {
+                        Button {
+                            Task { await model.setOrientationCondition(orientation, condition: nil) }
+                        } label: {
+                            Text("Always")
+                            if isAlways { Image(systemName: "checkmark") }
+                        }
+                        Button {
+                            Task { await model.setOrientationCondition(orientation, condition: ".when(deviceFamilies: [.pad])") }
+                        } label: {
+                            Text("Pad Only")
+                            if isPadOnly { Image(systemName: "checkmark") }
+                        }
+                        Button {
+                            Task { await model.setOrientationCondition(orientation, condition: ".when(deviceFamilies: [.phone])") }
+                        } label: {
+                            Text("Phone Only")
+                            if isPhoneOnly { Image(systemName: "checkmark") }
+                        }
+                    }
                 }
             }
             if let error = model.errorMessage {

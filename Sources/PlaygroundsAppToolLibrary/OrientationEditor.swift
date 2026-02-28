@@ -43,13 +43,7 @@ public final class GetOrientationsVisitor: SyntaxVisitor {
             
             if let arrayExpr = arg.expression.as(ArrayExprSyntax.self) {
                 for element in arrayExpr.elements {
-                    // Orientation might be `.portrait` or `.portraitUpsideDown(.when(deviceFamilies: [.pad]))`
-                    if let callExpr = element.expression.as(FunctionCallExprSyntax.self),
-                       let memberExpr = callExpr.calledExpression.as(MemberAccessExprSyntax.self) {
-                        orientations.append(".\(memberExpr.declName.baseName.text)(...)") // simplified representation
-                    } else if let memberExpr = element.expression.as(MemberAccessExprSyntax.self) {
-                        orientations.append(".\(memberExpr.declName.baseName.text)")
-                    }
+                    orientations.append(element.expression.description.trimmingCharacters(in: .whitespacesAndNewlines))
                 }
             }
         }
@@ -119,9 +113,10 @@ public final class OrientationRewriter: SyntaxRewriter {
 
         switch mutation {
         case .add(let targetName):
+            let targetBaseName = extractBaseName(from: targetName)
             // Check if already present
             let isPresent = arrayExpr.elements.contains { element in
-                extractBaseName(from: element.expression) == targetName
+                extractBaseName(from: element.expression) == targetBaseName
             }
             if isPresent { return expr } // No modification needed
             
@@ -147,8 +142,9 @@ public final class OrientationRewriter: SyntaxRewriter {
             return ExprSyntax(arrayExpr.with(\.elements, ArrayElementListSyntax(elements)))
 
         case .remove(let targetName):
+            let targetBaseName = extractBaseName(from: targetName)
             var remainingElements = arrayExpr.elements.filter { element in
-                extractBaseName(from: element.expression) != targetName
+                extractBaseName(from: element.expression) != targetBaseName
             }
             
             // Filter might have removed the last element but left a trailing comma on the new last element.
@@ -171,6 +167,13 @@ public final class OrientationRewriter: SyntaxRewriter {
             return memberExpr.declName.baseName.text
         }
         return nil
+    }
+
+    private func extractBaseName(from string: String) -> String {
+        if let parenIndex = string.firstIndex(of: "(") {
+            return String(string[..<parenIndex])
+        }
+        return string
     }
 
     private func makeOrientationElement(for name: String) -> ExprSyntax {
