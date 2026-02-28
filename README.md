@@ -18,33 +18,22 @@ All commands support a `--project <path>` option to specify the path to your `.s
 
 ## Commands
 
-### Platform Requirements (`platform`)
+### Versions (`versions`)
 
-Control which Apple operating systems and versions your app supports. Updating these allows you to drop support for older iOS versions, adopt the newest SwiftUI APIs, or add support for platforms like macOS or visionOS. 
+Control the minimum iOS version and Swift language version your app requires.
 
-- **Set Minimum OS Version**
-  Updates your app to require a specific OS version.
+- **Set Minimum iOS Version**
+  Updates your app to require a specific minimum iOS version.
   ```bash
-  PlaygroundsAppTool platform set <platform> <version>
-  # Example: PlaygroundsAppTool platform set iOS 17.0
+  PlaygroundsAppTool versions iOS <version>
+  # Example: PlaygroundsAppTool versions iOS 17.0
   ```
 
-- **Drop Platform Support**
-  Removes a platform entirely, meaning your app will no longer run on it.
+- **Set Swift Language Version**
+  Sets the Swift language compiler version for your project (valid options: 5 or 6).
   ```bash
-  PlaygroundsAppTool platform remove <platform>
-  # Example: PlaygroundsAppTool platform remove visionOS
-  ```
-
-### Swift Language Version (`swift-version`)
-
-Keep your project up-to-date with the latest Swift language features.
-
-- **Set Swift Version**
-  Sets your app to use whatever Swift compiler version you want.
-  ```bash
-  PlaygroundsAppTool swift-version set <version>
-  # Example: PlaygroundsAppTool swift-version set 6.0
+  PlaygroundsAppTool versions swift <version>
+  # Example: PlaygroundsAppTool versions swift 6
   ```
 
 ### App Assets & Resources (`resources`)
