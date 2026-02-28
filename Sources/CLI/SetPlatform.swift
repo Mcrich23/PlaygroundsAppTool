@@ -8,7 +8,7 @@ struct PlatformCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "platform",
         abstract: "Manage platform requirements for a Swift Playground.",
-        subcommands: [SetPlatform.self]
+        subcommands: [SetPlatform.self, RemovePlatform.self]
     )
 }
 
@@ -44,5 +44,29 @@ struct SetPlatform: AsyncParsableCommand {
         try await packageFile.write()
         
         print("Success! Updated the platform version.")
+    }
+}
+
+struct RemovePlatform: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "remove",
+        abstract: "Removes a specific platform requirement from Package.swift."
+    )
+
+    @OptionGroup var options: ToolOptions
+
+    @Argument(help: "The platform to remove (e.g. iOS, macOS, tvOS, watchOS, visionOS).")
+    var platform: String
+
+    mutating func run() async throws {
+        let packageURL = options.packagePath
+        print("Loading Package.swift at \(packageURL.path)...")
+        var packageFile = try await PackageSwiftFile.load(from: packageURL)
+        
+        print("Removing platform \(platform)...")
+        try await packageFile.removePlatform(platform)
+        
+        try await packageFile.write()
+        print("Success!")
     }
 }

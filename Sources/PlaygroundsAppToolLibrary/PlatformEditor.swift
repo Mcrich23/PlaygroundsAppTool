@@ -41,6 +41,7 @@ public enum PlatformEditorError: Error, LocalizedError {
 /// - If the platform is absent but a `platforms:` argument exists, a new entry is appended.
 /// - If there is no `platforms:` argument at all, one is inserted after the `name:` argument.
 public final class SetMinimumPlatformRewriter: SyntaxRewriter {
+    // ... logic remains untouched until here ...
     public let platform: PackagePlatform
     public let version: String
 
@@ -175,6 +176,65 @@ public final class SetMinimumPlatformRewriter: SyntaxRewriter {
     }
 }
 
+// MARK: - Rewriter (Remove Platform)
+
+/// A `SyntaxRewriter` that removes a specific platform from the `.platforms` array.
+public final class RemovePlatformRewriter: SyntaxRewriter {
+    public let platform: String
+    private var foundPackageCall = false
+
+    public init(platform: String) {
+        self.platform = platform
+    }
+
+    public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        guard isToplevelPackageCall(node) else {
+            return super.visit(node)
+        }
+        foundPackageCall = true
+
+        let args = node.arguments
+        let updatedArgs = LabeledExprListSyntax(args.map { arg -> LabeledExprSyntax in
+            guard arg.label?.text == "platforms" else { return arg }
+            let patchedArray = rewritePlatformsArray(arg.expression)
+            return arg.with(\.expression, patchedArray)
+        })
+
+        let updatedNode = node.with(\.arguments, updatedArgs)
+        return ExprSyntax(updatedNode)
+    }
+
+    private func isToplevelPackageCall(_ node: FunctionCallExprSyntax) -> Bool {
+        if let identifier = node.calledExpression.as(DeclReferenceExprSyntax.self),
+           identifier.baseName.text == "Package" {
+            return true
+        }
+        return false
+    }
+
+    private func rewritePlatformsArray(_ expr: ExprSyntax) -> ExprSyntax {
+        guard let arrayExpr = expr.as(ArrayExprSyntax.self) else { return expr }
+
+        var remainingElements = arrayExpr.elements.filter { element in
+            // Parse something like `.iOS("17.0")` or `.macOS(.v12)`
+            if let callExpr = element.expression.as(FunctionCallExprSyntax.self),
+               let memberExpr = callExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+                return memberExpr.declName.baseName.text != platform
+            } else if let memberExpr = element.expression.as(MemberAccessExprSyntax.self) {
+                return memberExpr.declName.baseName.text != platform
+            }
+            return true
+        }
+
+        if let last = remainingElements.last {
+            let lastIndex = remainingElements.index(before: remainingElements.endIndex)
+            remainingElements[lastIndex] = last.with(\.trailingComma, nil)
+        }
+
+        return ExprSyntax(arrayExpr.with(\.elements, ArrayElementListSyntax(remainingElements)))
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
@@ -188,6 +248,17 @@ public extension PackageSwiftFile {
         let syntaxToRewrite = self.syntax
         let rewritten = await Task {
             let rewriter = SetMinimumPlatformRewriter(platform: platform, version: version)
+            return rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+        }.value
+        apply(rewritten: rewritten)
+    }
+
+    /// Removes a platform requirement from the `.platforms` array using `RemovePlatformRewriter`.
+    mutating func removePlatform(_ platform: String) async throws {
+        let syntaxToRewrite = self.syntax
+        
+        let rewritten = await Task {
+            let rewriter = RemovePlatformRewriter(platform: platform)
             return rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
         }.value
         apply(rewritten: rewritten)

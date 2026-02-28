@@ -115,6 +115,47 @@ public final class TargetResourcesEditor: SyntaxRewriter {
     }
 }
 
+// MARK: - Rewriter (Remove Resources)
+
+/// A `SyntaxRewriter` that removes the `resources:` argument from a target.
+public final class RemoveTargetResourcesRewriter: SyntaxRewriter {
+    public let targetName: String
+    public private(set) var didApplyPatch: Bool = false
+
+    public init(targetName: String = "AppModule") {
+        self.targetName = targetName
+    }
+
+    public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+              (memberAccess.declName.baseName.text == "executableTarget" || memberAccess.declName.baseName.text == "target") else {
+            return super.visit(node)
+        }
+
+        let args = node.arguments
+        let isCorrectTarget = args.contains { arg in
+            arg.label?.text == "name" && arg.expression.description == "\"\(targetName)\""
+        }
+        
+        guard isCorrectTarget else { return super.visit(node) }
+        guard !didApplyPatch else { return super.visit(node) }
+        didApplyPatch = true
+
+        var remainingArgs = args.filter { arg in
+            arg.label?.text != "resources"
+        }
+        
+        // Strip trailing comma from the absolute last element after removal just in case.
+        if let last = remainingArgs.last {
+            let lastIndex = remainingArgs.index(before: remainingArgs.endIndex)
+            remainingArgs[lastIndex] = last.with(\.trailingComma, nil)
+        }
+
+        let updatedNode = node.with(\.arguments, remainingArgs)
+        return ExprSyntax(updatedNode)
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
@@ -124,6 +165,23 @@ public extension PackageSwiftFile {
         
         let result = await Task {
             let rewriter = TargetResourcesEditor(targetName: targetName)
+            let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
+        }.value
+
+        if !result.didApplyPatch {
+            throw TargetResourcesEditorError.targetNotFound(targetName)
+        }
+
+        apply(rewritten: result.rewritten)
+    }
+
+    /// Removes the `resources:` argument from the specified target.
+    mutating func removeResources(targetName: String = "AppModule") async throws {
+        let syntaxToRewrite = self.syntax
+        
+        let result = await Task {
+            let rewriter = RemoveTargetResourcesRewriter(targetName: targetName)
             let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
             return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
         }.value

@@ -90,6 +90,39 @@ public final class AppInfoEditor: SyntaxRewriter {
     }
 }
 
+// MARK: - Rewriter (Remove Info Plist)
+
+/// A `SyntaxRewriter` that removes the `additionalInfoPlistContentFilePath`
+/// argument from the first `.iOSApplication(…)` or `.macOSApplication(…)` product.
+public final class RemoveAppInfoRewriter: SyntaxRewriter {
+    public private(set) var didApplyPatch: Bool = false
+    
+    public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+              (memberAccess.declName.baseName.text == "iOSApplication" || memberAccess.declName.baseName.text == "macOSApplication") else {
+            return super.visit(node)
+        }
+
+        guard !didApplyPatch else { return super.visit(node) }
+        didApplyPatch = true
+
+        let args = node.arguments
+        var remainingArgs = args.filter { arg in
+            let text = arg.label?.text
+            return text != "additionalInfoPlistContentFilePath" && text != "infoPlist"
+        }
+        
+        // Strip trailing comma from the absolute last element after removal just in case.
+        if let last = remainingArgs.last {
+            let lastIndex = remainingArgs.index(before: remainingArgs.endIndex)
+            remainingArgs[lastIndex] = last.with(\.trailingComma, nil)
+        }
+
+        let updatedNode = node.with(\.arguments, remainingArgs)
+        return ExprSyntax(updatedNode)
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
@@ -99,6 +132,23 @@ public extension PackageSwiftFile {
         
         let result = await Task {
             let rewriter = AppInfoEditor(filename: filename)
+            let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
+        }.value
+
+        if !result.didApplyPatch {
+            throw AppInfoEditorError.applicationProductNotFound
+        }
+
+        apply(rewritten: result.rewritten)
+    }
+
+    /// Removes `additionalInfoPlistContentFilePath` from the application product.
+    mutating func removeInfoPlist() async throws {
+        let syntaxToRewrite = self.syntax
+        
+        let result = await Task {
+            let rewriter = RemoveAppInfoRewriter()
             let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
             return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
         }.value

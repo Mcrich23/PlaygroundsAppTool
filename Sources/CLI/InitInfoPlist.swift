@@ -7,7 +7,7 @@ struct InfoPlistCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "info-plist",
         abstract: "Manage Info.plist files linked to the application product.",
-        subcommands: [InitInfoPlist.self]
+        subcommands: [InitInfoPlist.self, RemoveInfoPlist.self]
     )
 }
 
@@ -74,5 +74,31 @@ struct InitInfoPlist: AsyncParsableCommand {
         }
         
         print("Success! Initialized \(filename) for the project.")
+    }
+}
+
+struct RemoveInfoPlist: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "remove",
+        abstract: "Removes the Info.plist link from the Package.swift product."
+    )
+
+    @OptionGroup var options: ToolOptions
+
+    mutating func run() async throws {
+        let packageURL = options.packagePath
+        print("Loading Package.swift at \(packageURL.path)...")
+        var packageFile = try await PackageSwiftFile.load(from: packageURL)
+        
+        print("Removing Info.plist property from application product...")
+        do {
+            try await packageFile.removeInfoPlist()
+        } catch {
+            print("Error: \(error.localizedDescription)")
+            throw ExitCode.failure
+        }
+        
+        try await packageFile.write()
+        print("Success!")
     }
 }

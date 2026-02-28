@@ -8,7 +8,7 @@ struct ResourcesCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "resources",
         abstract: "Manage the Resources directory and project linking.",
-        subcommands: [InitResources.self]
+        subcommands: [InitResources.self, RemoveResources.self]
     )
 }
 
@@ -56,5 +56,31 @@ struct InitResources: AsyncParsableCommand {
         }
         
         print("Success! Initialized Resources for target '\(options.target)'.")
+    }
+}
+
+struct RemoveResources: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "remove",
+        abstract: "Removes the resources array from a target in Package.swift."
+    )
+
+    @OptionGroup var options: ToolOptions
+
+    mutating func run() async throws {
+        let packageURL = options.packagePath
+        print("Loading Package.swift at \(packageURL.path)...")
+        var packageFile = try await PackageSwiftFile.load(from: packageURL)
+        
+        print("Removing resources array from target '\(options.target)'...")
+        do {
+            try await packageFile.removeResources(targetName: options.target)
+        } catch {
+            print("Error: \(error.localizedDescription)")
+            throw ExitCode.failure
+        }
+        
+        try await packageFile.write()
+        print("Success!")
     }
 }
