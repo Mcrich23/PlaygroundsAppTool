@@ -157,15 +157,14 @@ public extension PackageSwiftFile {
     /// Modifies or inserts the `swiftLanguageVersions` array using `SetSwiftVersionRewriter`
     /// and updates the `// swift-tools-version:` comment header.
     mutating func setSwiftVersion(_ version: String) async throws {
-        guard let float = Float(version) else {
+        guard version == "5" || version == "6" else {
             throw VersionErrors.invalidVersionString(version)
         }
-        let version = String(float)
         
         let syntaxToRewrite = self.syntax
         
         let rewritten = await Task {
-            let toolsRewriter = SetSwiftToolsVersionRewriter(version: version)
+            let toolsRewriter = SetSwiftToolsVersionRewriter(version: "6.0")
             let withToolsVersion = toolsRewriter.visit(syntaxToRewrite)
             
             let rewriter = SetSwiftVersionRewriter(version: version)
@@ -175,6 +174,13 @@ public extension PackageSwiftFile {
     }
 }
 
-enum VersionErrors: Error {
+enum VersionErrors: Error, LocalizedError {
     case invalidVersionString(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidVersionString(let ver):
+            return "Invalid Swift Language version: '\(ver)'. Only '5' and '6' are supported."
+        }
+    }
 }

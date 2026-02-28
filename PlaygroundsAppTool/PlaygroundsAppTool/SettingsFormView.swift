@@ -88,17 +88,19 @@ struct PlatformView: View {
             }
             
             Section(header: Text("Swift Language Version")) {
-                TextField("Swift Version", text: $model.swiftVersion)
-                    .onSubmit {
+                Picker("Swift Version", selection: Binding(
+                    get: { model.swiftVersion.isEmpty ? "6" : model.swiftVersion },
+                    set: { newValue in
+                        model.swiftVersion = newValue
                         Task {
-                            await model.saveSwiftVersion(model.swiftVersion)
+                            await model.saveSwiftVersion(newValue)
                         }
                     }
-                Button("Update Swift Version") {
-                    Task {
-                        await model.saveSwiftVersion(model.swiftVersion)
-                    }
+                )) {
+                    Text("Swift 5").tag("5")
+                    Text("Swift 6").tag("6")
                 }
+                .pickerStyle(.menu)
             }
         }
         .formStyle(.grouped)

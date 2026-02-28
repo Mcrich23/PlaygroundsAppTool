@@ -50,6 +50,11 @@ struct SwiftVersionSubcommand: AsyncParsableCommand {
     var version: String
 
     mutating func run() async throws {
+        guard version == "5" || version == "6" else {
+            print("Error: '\(version)' is not a valid Swift language version. Only '5' and '6' are supported.")
+            throw ExitCode.failure
+        }
+
         let packageURL = options.packagePath
         print("Loading Package.swift at \(packageURL.path)...")
         var packageFile = try await PackageSwiftFile.load(from: packageURL)
