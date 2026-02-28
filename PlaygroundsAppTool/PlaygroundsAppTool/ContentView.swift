@@ -28,7 +28,7 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Playgrounds Toll")
+            .navigationTitle("PlaygroundsAppTool")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: {
