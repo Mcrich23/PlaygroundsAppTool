@@ -1,6 +1,6 @@
 # PlaygroundsAppTool
 
-PlaygroundsAppTool is a powerful CLI utility for programmatically managing and modifying Swift Playground App (`.swiftpm`) projects. It uses `swift-syntax` to read, manipulate, and rewrite `Package.swift` ASTs with perfect whitespace preservation.
+PlaygroundsAppTool is a powerful CLI utility for managing and configuring Swift Playground App (`.swiftpm`) projects. It helps you quickly adjust your app's capabilities, assets, and requirements without having to manually edit configuration files.
 
 ## Usage
 
@@ -12,93 +12,92 @@ All commands support a `--project <path>` option to specify the path to your `.s
 
 ### Global Options
 - `--project <path>`: The path to the `.swiftpm` project. Defaults to `./`.
-- `--target <name>`: The name of the target inside `Package.swift` (mostly used for `resources`). Defaults to `AppModule`.
+- `--target <name>`: The name of your app's main target. Defaults to `AppModule`.
 
 ---
 
 ## Commands
 
-### Platform Requirements
+### Platform Requirements (`platform`)
 
-Manage the target platforms required for your Playground App.
+Control which Apple operating systems and versions your app supports. Updating these allows you to drop support for older iOS versions, adopt the newest SwiftUI APIs, or add support for platforms like macOS or visionOS. 
 
-- **Set a Platform Version**
-  Sets the minimum OS version for a specific platform. If the platform doesn't exist in the array, it will be added.
+- **Set Minimum OS Version**
+  Updates your app to require a specific OS version.
   ```bash
   PlaygroundsAppTool platform set <platform> <version>
   # Example: PlaygroundsAppTool platform set iOS 17.0
   ```
 
-- **Remove a Platform**
-  Removes a platform entirely from the `platforms` array.
+- **Drop Platform Support**
+  Removes a platform entirely, meaning your app will no longer run on it.
   ```bash
   PlaygroundsAppTool platform remove <platform>
   # Example: PlaygroundsAppTool platform remove visionOS
   ```
 
-### Swift Language Version
+### Swift Language Version (`swift-version`)
 
-Manage the `swiftLanguageVersions` array and `// swift-tools-version:` comment at the top of the `Package.swift`.
+Keep your project up-to-date with the latest Swift language features.
 
 - **Set Swift Version**
-  Sets the language version and updates the `// swift-tools-version:` comment.
+  Sets your app to use whatever Swift compiler version you want.
   ```bash
   PlaygroundsAppTool swift-version set <version>
   # Example: PlaygroundsAppTool swift-version set 6.0
   ```
 
-### Resources
+### App Assets & Resources (`resources`)
 
-Easily link a `Resources` folder to your target.
+Manage the files bundled with your app, such as images, audio clips, JSON data, and custom fonts.
 
-- **Init Resources**
-  Creates a physical `Resources` directory and injects `resources: [.process("Resources")]` into your executable target.
+- **Initialize Resources**
+  Creates a `Resources` directory and links it to your app. Any files you drop into this directory will be bundled with your app when it builds.
   ```bash
   PlaygroundsAppTool resources init
-  # Example: PlaygroundsAppTool resources init
   ```
 
 - **Remove Resources**
-  Removes the `resources` property from your target configuration.
+  Unlinks the `Resources` directory, meaning assets will no longer be bundled.
   ```bash
   PlaygroundsAppTool resources remove
   ```
 
-### Info.plist
+### Advanced App Capabilities (`info-plist`)
 
-Link custom `.plist` files to bypass typical Playground sandboxing or provide additional App capabilities.
+By default, Swift Playgrounds apps operate within a restricted sandbox. Adding an `Info.plist` file lets you request permissions (like Camera, Microphone, or Location access) and configure advanced app behaviors.
 
-- **Init Info.plist**
-  Creates an empty `Info.plist` file physically on disk and injects the `additionalInfoPlistContentFilePath: "Info.plist"` property into the `.iOSApplication` product.
+- **Initialize Info.plist**
+  Generates an `Info.plist` file and links it to your app, allowing you to bypass typical sandbox restrictions by configuring custom XML keys.
   ```bash
   PlaygroundsAppTool info-plist init
   ```
 
 - **Remove Info.plist**
-  Removes the `additionalInfoPlistContentFilePath` property from the application product.
+  Unlinks the `Info.plist` file from your app, reverting it to standard Playground restrictions.
   ```bash
   PlaygroundsAppTool info-plist remove
   ```
 
-### Orientations
+### Interface Orientations (`orientation`)
 
-Manage the `supportedInterfaceOrientations` array in your iOS Application product.
+Control how your app behaves when the user rotates their iPhone or iPad. You can lock your app to portrait mode or allow it to flexibly rotate into landscape.
 
-- **List Orientations**
-  Lists all actively configured interface orientations.
+- **List Allowed Orientations**
+  Shows all the device orientations your app currently supports.
   ```bash
   PlaygroundsAppTool orientation list
   ```
 
-- **Add Orientation**
-  Adds a new orientation to the array (e.g. `portrait`, `landscapeLeft`, `landscapeRight`, `portraitUpsideDown`).
+- **Allow an Orientation**
+  Enables your app to rotate into a specific orientation (`portrait`, `landscapeLeft`, `landscapeRight`, `portraitUpsideDown`).
   ```bash
   PlaygroundsAppTool orientation add <orientation>
   # Example: PlaygroundsAppTool orientation add landscapeRight
   ```
 
-- **Remove Orientation**
-  Removes an orientation from the array.
+- **Restrict an Orientation**
+  Prevents your app from rotating into a specific orientation.
   ```bash
   PlaygroundsAppTool orientation remove <orientation>
   ```
