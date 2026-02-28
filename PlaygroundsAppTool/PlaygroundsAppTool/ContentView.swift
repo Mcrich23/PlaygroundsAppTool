@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PlaygroundsAppToolLibrary
 
 struct ContentView: View {
     @State private var model = PackageModel()
@@ -9,7 +10,7 @@ struct ContentView: View {
         NavigationSplitView {
             List {
                 if model.isLoaded {
-                    Section("Project Details") {
+                    Section(model.packageFile?.url.deletingLastPathComponent().lastPathComponent ?? "Project Details") {
                         NavigationLink(destination: BasicInfoView(model: model)) {
                             Label("Basic Info", systemImage: "info.circle")
                         }

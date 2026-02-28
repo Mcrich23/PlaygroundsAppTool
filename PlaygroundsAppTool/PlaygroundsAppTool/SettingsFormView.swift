@@ -48,7 +48,6 @@ struct BasicInfoView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Basic Info")
-        .navigationSubtitle(model.packageFile?.url.deletingLastPathComponent().lastPathComponent ?? "")
     }
 }
 
@@ -106,7 +105,6 @@ struct PlatformView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Versions")
-        .navigationSubtitle(model.packageFile?.url.deletingLastPathComponent().lastPathComponent ?? "")
     }
 }
 
@@ -181,7 +179,6 @@ struct OrientationView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Orientations")
-        .navigationSubtitle(model.packageFile?.url.deletingLastPathComponent().lastPathComponent ?? "")
     }
 }
 
@@ -217,6 +214,5 @@ struct CapabilitiesView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Capabilities")
-        .navigationSubtitle(model.packageFile?.url.deletingLastPathComponent().lastPathComponent ?? "")
     }
 }
