@@ -1,14 +1,11 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-// 
-// Swift Argument Parser
-// https://swiftpackageindex.com/apple/swift-argument-parser/documentation
-
 import ArgumentParser
 
 @main
-struct PlaygroundsAppTool: ParsableCommand {
-    mutating func run() throws {
-        print("Hello, world!")
-    }
+struct PlaygroundsAppTool: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "PlaygroundsAppTool",
+        abstract: "A CLI tool for managing .swiftpm Playground Apps.",
+        version: "1.0.0",
+        subcommands: [SetPlatform.self]
+    )
 }
