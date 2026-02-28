@@ -10,7 +10,8 @@ struct PlaygroundsAppTool: AsyncParsableCommand {
             VersionsCommand.self,
             ResourcesCommand.self,
             InfoPlistCommand.self,
-            OrientationCommand.self
+            OrientationCommand.self,
+            AppInfoCommand.self
         ]
     )
 }

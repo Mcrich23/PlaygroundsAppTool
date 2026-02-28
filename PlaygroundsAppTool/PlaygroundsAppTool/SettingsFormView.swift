@@ -35,77 +35,30 @@ struct BasicInfoView: View {
             }
             
             Section(header: Text("Appearance & Category")) {
-                let appCategories = [
-                    ("None", ""),
-                    ("Books", "books"),
-                    ("Business", "business"),
-                    ("Developer Tools", "developerTools"),
-                    ("Education", "education"),
-                    ("Entertainment", "entertainment"),
-                    ("Finance", "finance"),
-                    ("Food & Drink", "foodAndDrink"),
-                    ("Games", "games"),
-                    ("Games - Action Games", "actionGames"),
-                    ("Games - Adventure Games", "adventureGames"),
-                    ("Games - Board Games", "boardGames"),
-                    ("Games - Card Games", "cardGames"),
-                    ("Games - Casino Games", "casinoGames"),
-                    ("Games - Casual Games", "casualGames"),
-                    ("Games - Family Games", "familyGames"),
-                    ("Games - Kids Games", "kidsGames"),
-                    ("Games - Music Games", "musicGames"),
-                    ("Games - Puzzle Games", "puzzleGames"),
-                    ("Games - Racing Games", "racingGames"),
-                    ("Games - Role Playing Games", "rolePlayingGames"),
-                    ("Games - Simulation Games", "simulationGames"),
-                    ("Games - Sports Games", "sportsGames"),
-                    ("Games - Strategy Games", "strategyGames"),
-                    ("Games - Trivia Games", "triviaGames"),
-                    ("Games - Word Games", "wordGames"),
-                    ("Graphics & Design", "graphicsAndDesign"),
-                    ("Health & Fitness", "healthAndFitness"),
-                    ("Lifestyle", "lifestyle"),
-                    ("Magazines & Newspapers", "magazinesAndNewspapers"),
-                    ("Medical", "medical"),
-                    ("Music", "music"),
-                    ("Navigation", "navigation"),
-                    ("News", "news"),
-                    ("Photography", "photography"),
-                    ("Productivity", "productivity"),
-                    ("Reference", "reference"),
-                    ("Shopping", "shopping"),
-                    ("Social Networking", "socialNetworking"),
-                    ("Sports", "sports"),
-                    ("Travel", "travel"),
-                    ("Utilities", "utilities"),
-                    ("Video", "video"),
-                    ("Weather", "weather")
-                ]
-                
                 Picker("App Category", selection: Binding(
-                    get: { model.appInfo.appCategory ?? "" },
-                    set: { model.appInfo.appCategory = $0.isEmpty ? nil : $0 }
+                    get: { model.appInfo.appCategory ?? .none },
+                    set: { model.appInfo.setAppCategory($0) }
                 )) {
-                    ForEach(appCategories, id: \.1) { (label, value) in
-                        Text(label).tag(value)
+                    ForEach(AppCategory.allCases) { category in
+                        Text(category.displayName).tag(category)
+                        if category == .none {
+                            Divider()
+                        }
                     }
                 }
                 
-                Picker("Accent Color Type", selection: Binding(
-                    get: {
-                        if let color = model.appInfo.accentColor {
-                            if case .presetColor = color { return "Preset" }
-                        }
-                        return "Asset"
-                    },
-                    set: { newType in
-                        if newType == "Asset" {
-                            model.appInfo.accentColor = .asset("AccentColor")
-                        } else if newType == "Preset" {
-                            model.appInfo.accentColor = .presetColor("blue")
-                        }
+                Picker("Accent Color Type", selection: Binding(get: {
+                    if let color = model.appInfo.accentColor {
+                        if case .presetColor = color { return "Preset" }
                     }
-                )) {
+                    return "Asset"
+                }, set: { newType in
+                    if newType == "Asset" {
+                        model.appInfo.accentColor = .asset("AccentColor")
+                    } else if newType == "Preset" {
+                        model.appInfo.accentColor = .presetColor(.blue)
+                    }
+                })) {
                     Text("Asset Name").tag("Asset")
                     Text("Preset Color").tag("Preset")
                 }
@@ -116,34 +69,19 @@ struct BasicInfoView: View {
                             get: { name },
                             set: { model.appInfo.accentColor = .asset($0) }
                         ))
-                    } else if case .presetColor(let name) = color {
-                        let presetColors = [
-                            ("Red", "red"),
-                            ("Orange", "orange"),
-                            ("Yellow", "yellow"),
-                            ("Green", "green"),
-                            ("Mint", "mint"),
-                            ("Teal", "teal"),
-                            ("Cyan", "cyan"),
-                            ("Blue", "blue"),
-                            ("Indigo", "indigo"),
-                            ("Purple", "purple"),
-                            ("Pink", "pink"),
-                            ("Brown", "brown")
-                        ]
-                        
+                    } else if case .presetColor(let preset) = color {
                         Picker("Preset Color", selection: Binding(
-                            get: { name },
+                            get: { preset },
                             set: { model.appInfo.accentColor = .presetColor($0) }
                         )) {
-                            ForEach(presetColors, id: \.1) { (label, value) in
+                            ForEach(PresetColor.allCases) { pColor in
                                 HStack {
                                     // A simple circle to roughly approximate the color in UI
                                     Circle()
-                                        .fill(colorForPreset(value))
+                                        .fill(pColor.uiColor)
                                         .frame(width: 12, height: 12)
-                                    Text(label)
-                                }.tag(value)
+                                    Text(pColor.displayName)
+                                }.tag(pColor)
                             }
                         }
                     }
@@ -361,20 +299,21 @@ struct CapabilitiesView: View {
 
 // MARK: - Helpers
 
-func colorForPreset(_ name: String) -> Color {
-    switch name {
-    case "red": return .red
-    case "orange": return .orange
-    case "yellow": return .yellow
-    case "green": return .green
-    case "mint": return .mint
-    case "teal": return .teal
-    case "cyan": return .cyan
-    case "blue": return .blue
-    case "indigo": return .indigo
-    case "purple": return .purple
-    case "pink": return .pink
-    case "brown": return .brown
-    default: return .clear
+extension PresetColor {
+    var uiColor: Color {
+        switch self {
+        case .red: return .red
+        case .orange: return .orange
+        case .yellow: return .yellow
+        case .green: return .green
+        case .mint: return .mint
+        case .teal: return .teal
+        case .cyan: return .cyan
+        case .blue: return .blue
+        case .indigo: return .indigo
+        case .purple: return .purple
+        case .pink: return .pink
+        case .brown: return .brown
+        }
     }
 }

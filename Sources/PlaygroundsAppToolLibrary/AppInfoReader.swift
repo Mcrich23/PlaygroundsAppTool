@@ -2,9 +2,9 @@ import Foundation
 import SwiftSyntax
 import SwiftParser
 
-public enum AppColor: Sendable, Equatable {
+public enum AppColor: Sendable, Equatable, Hashable {
     case asset(String)
-    case presetColor(String)
+    case presetColor(PresetColor)
 }
 
 public struct AppInfo: Sendable, Equatable {
@@ -16,10 +16,19 @@ public struct AppInfo: Sendable, Equatable {
     public var iconAssetName: String?
     public var accentColor: AppColor?
     public var supportedDeviceFamilies: [String] = []
-    public var appCategory: String?
+    public private(set) var appCategory: AppCategory?
     public var hasInfoPlist: Bool = false
     
     public init() {}
+    
+    public mutating func setAppCategory(_ category: AppCategory) {
+        guard category != .none else {
+            appCategory = nil
+            return
+        }
+        
+        appCategory = category
+    }
 }
 
 /// A `SyntaxVisitor` that extracts basic app information from the
@@ -65,7 +74,9 @@ public final class AppInfoReaderVisitor: SyntaxVisitor {
                         }
                     } else if memberAccess.declName.baseName.text == "presetColor" {
                         if let innerMember = callExpr.arguments.first?.expression.as(MemberAccessExprSyntax.self) {
-                            appInfo.accentColor = .presetColor(innerMember.declName.baseName.text)
+                            if let preset = PresetColor(rawValue: innerMember.declName.baseName.text) {
+                                appInfo.accentColor = .presetColor(preset)
+                            }
                         }
                     }
                 }
@@ -81,7 +92,9 @@ public final class AppInfoReaderVisitor: SyntaxVisitor {
                 }
             case "appCategory":
                 if let memberAccess = arg.expression.as(MemberAccessExprSyntax.self) {
-                    appInfo.appCategory = memberAccess.declName.baseName.text
+                    if let category = AppCategory(rawValue: memberAccess.declName.baseName.text) {
+                        appInfo.setAppCategory(category)
+                    }
                 }
             case "additionalInfoPlistContentFilePath", "infoPlist":
                 appInfo.hasInfoPlist = true
