@@ -90,3 +90,36 @@ Control how your app behaves when the user rotates their iPhone or iPad. You can
   ```bash
   PlaygroundsAppTool orientation remove <orientation>
   ```
+
+### General App Information (`appInfo`)
+
+Retrieve and modify broader configuration metadata like category, accent colors, and supported hardware.
+
+- **Check Current App Info**
+  Displays out the currently active settings in the manifest.
+  ```bash
+  PlaygroundsAppTool appInfo get
+  ```
+
+- **Update the App Source Category**
+  Sets the main App Store category (e.g. `games`, `education`, `productivity`).
+  ```bash
+  PlaygroundsAppTool appInfo setCategory <category>
+  # Example: PlaygroundsAppTool appInfo setCategory actionGames
+  ```
+
+- **Update Accent Color**
+  Change the universal accent highlight color. You can supply either an Asset Catalog name or use an Apple generic UI color preset.
+  ```bash
+  PlaygroundsAppTool appInfo setAccentColor --preset <preset>
+  # Example: PlaygroundsAppTool appInfo setAccentColor --preset blue
+  PlaygroundsAppTool appInfo setAccentColor --asset <assetName>
+  # Example: PlaygroundsAppTool appInfo setAccentColor --asset CustomRed
+  ```
+
+- **Set Supported Devices**
+  Toggles which Apple device platforms the application can legally be installed on. Options include `phone`, `pad`.
+  ```bash
+  PlaygroundsAppTool appInfo setDeviceFamilies <family1> <family2> ...
+  # Example: PlaygroundsAppTool appInfo setDeviceFamilies phone pad
+  ```
