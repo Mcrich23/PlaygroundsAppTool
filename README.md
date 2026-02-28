@@ -1,6 +1,6 @@
 # PlaygroundsAppTool
 
-PlaygroundsAppTool is a powerful CLI utility for managing and configuring Swift Playground App (`.swiftpm`) projects. It helps you quickly adjust your app's capabilities, assets, and requirements without having to manually edit configuration files.
+PlaygroundsAppTool is a powerful CLI/UI App utility for managing and configuring Swift Playground App (`.swiftpm`) projects. It helps you quickly adjust your app's capabilities, assets, and requirements without having to manually edit configuration files.
 
 ## Usage
 
