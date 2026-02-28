@@ -11,9 +11,6 @@ struct InitResources: AsyncParsableCommand {
 
     @OptionGroup var options: ToolOptions
 
-    @Option(name: .shortAndLong, help: "The target name to interact with.")
-    var target: String = "AppModule"
-
     mutating func run() async throws {
         let packageURL = options.packagePath
         
@@ -25,9 +22,9 @@ struct InitResources: AsyncParsableCommand {
         print("Loading Package.swift at \(packageURL.path)...")
         var packageFile = try await PackageSwiftFile.load(from: packageURL)
         
-        print("Injecting resources array into target '\(target)'...")
+        print("Injecting resources array into target '\(options.target)'...")
         do {
-            try await packageFile.initResources(targetName: target)
+            try await packageFile.initResources(targetName: options.target)
         } catch {
             print("Error modifying Package.swift: \(error.localizedDescription)")
             throw ExitCode.failure
@@ -49,6 +46,6 @@ struct InitResources: AsyncParsableCommand {
             print("Resources directory already exists.")
         }
         
-        print("Success! Initialized Resources for target '\(target)'.")
+        print("Success! Initialized Resources for target '\(options.target)'.")
     }
 }
