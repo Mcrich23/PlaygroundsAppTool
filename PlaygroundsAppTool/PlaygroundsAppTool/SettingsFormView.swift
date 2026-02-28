@@ -151,7 +151,7 @@ struct BasicInfoView: View {
             }
             
             Section(header: Text("Supported Device Families")) {
-                let families = ["phone", "pad", "mac"]
+                let families = ["phone", "pad"]
                 ForEach(families, id: \.self) { family in
                     Toggle(family.capitalized, isOn: Binding(
                         get: { model.appInfo.supportedDeviceFamilies.contains(family) },
