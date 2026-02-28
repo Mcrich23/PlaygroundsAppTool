@@ -70,8 +70,8 @@ struct PlatformView: View {
                                     Task { await model.setPlatform(platform, version: newValue) }
                                 }
                             ))
+                            .labelsHidden()
                             .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
                             
                             Button(role: .destructive) {
                                 Task { await model.removePlatform(platform) }
