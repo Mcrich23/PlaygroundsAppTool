@@ -106,7 +106,7 @@ struct SetCategoryCommand: AsyncParsableCommand {
         var packageFile = try await PackageSwiftFile.load(from: packageURL)
         var appInfo = try await packageFile.getAppInfo()
         
-        appInfo.appCategory = category
+        appInfo.setAppCategory(category)
         try await packageFile.setAppInfo(appInfo)
         try await packageFile.write()
         
