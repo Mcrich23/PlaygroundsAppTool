@@ -28,7 +28,7 @@ struct BasicInfoView: View {
                     get: { model.appInfo.displayVersion ?? "" },
                     set: { model.appInfo.displayVersion = $0.isEmpty ? nil : $0 }
                 ))
-                TextField("Bundle Version", text: Binding(
+                TextField("Build Number", text: Binding(
                     get: { model.appInfo.bundleVersion ?? "" },
                     set: { model.appInfo.bundleVersion = $0.isEmpty ? nil : $0 }
                 ))
