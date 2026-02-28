@@ -90,6 +90,11 @@ struct ContentView: View {
                 model.errorMessage = error.localizedDescription
             }
         }
+        .onOpenURL { url in
+            Task {
+                await model.load(from: url)
+            }
+        }
     }
 }
 
