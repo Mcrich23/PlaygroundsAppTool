@@ -36,11 +36,27 @@ struct AddOrientation: AsyncParsableCommand {
     
     @Argument(help: "The orientation base name to add (e.g. portrait, landscapeRight).")
     var orientation: String
+    
+    @Flag(help: "Restrict this orientation to iPad targets.")
+    var pad: Bool = false
+
+    @Flag(help: "Restrict this orientation to iPhone targets.")
+    var phone: Bool = false
 
     mutating func run() async throws {
         var packageFile = try await PackageSwiftFile.load(from: options.packagePath)
-        print("Adding '.\(orientation)' to orientations...")
-        try await packageFile.addOrientation(orientation)
+        
+        var orientationString = orientation
+        if pad && phone {
+            orientationString += "(.when(deviceFamilies: [.pad, .phone]))"
+        } else if pad {
+            orientationString += "(.when(deviceFamilies: [.pad]))"
+        } else if phone {
+            orientationString += "(.when(deviceFamilies: [.phone]))"
+        }
+        
+        print("Adding '.\(orientationString)' to orientations...")
+        try await packageFile.addOrientation(orientationString)
         try await packageFile.write()
         print("Success!")
     }
