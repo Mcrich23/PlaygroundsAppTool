@@ -14,7 +14,7 @@ struct ContentView: View {
                             Label("Basic Info", systemImage: "info.circle")
                         }
                         NavigationLink(destination: PlatformView(model: model)) {
-                            Label("Platforms", systemImage: "applelogo")
+                            Label("Versions", systemImage: "applelogo")
                         }
                         NavigationLink(destination: OrientationView(model: model)) {
                             Label("Orientations", systemImage: "arrow.triangle.2.circlepath")

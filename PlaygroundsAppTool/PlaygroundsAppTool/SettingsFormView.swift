@@ -78,7 +78,7 @@ struct PlatformView: View {
                             Spacer()
                             Button("Add") {
                                 Task {
-                                    let defaultVersion = "16.0"
+                                    let defaultVersion = "26.0"
                                     await model.setPlatform(platform, version: defaultVersion)
                                 }
                             }
@@ -104,7 +104,7 @@ struct PlatformView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Platforms")
+        .navigationTitle("Versions")
     }
 }
 
