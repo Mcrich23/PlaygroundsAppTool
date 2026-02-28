@@ -3,9 +3,18 @@ import ArgumentParser
 import PlaygroundsAppToolLibrary
 
 /// `init-resources` CLI command implementation
+/// `resources` parent command
+struct ResourcesCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "resources",
+        abstract: "Manage the Resources directory and project linking.",
+        subcommands: [InitResources.self]
+    )
+}
+
 struct InitResources: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "init-resources",
+        commandName: "init",
         abstract: "Initializes a Resources directory and hooks it into Package.swift for a specific target."
     )
 

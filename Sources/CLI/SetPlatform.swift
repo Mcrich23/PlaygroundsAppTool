@@ -3,9 +3,18 @@ import ArgumentParser
 import PlaygroundsAppToolLibrary
 
 /// `set-platform` CLI command implementation
+/// `platform` parent command
+struct PlatformCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "platform",
+        abstract: "Manage platform requirements for a Swift Playground.",
+        subcommands: [SetPlatform.self]
+    )
+}
+
 struct SetPlatform: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "set-platform",
+        commandName: "set",
         abstract: "Sets the minimum platform version in a Swift Playground's Package.swift."
     )
 

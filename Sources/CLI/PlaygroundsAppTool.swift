@@ -7,9 +7,9 @@ struct PlaygroundsAppTool: AsyncParsableCommand {
         abstract: "A CLI tool for managing .swiftpm Playground Apps.",
         version: "1.0.0",
         subcommands: [
-            SetPlatform.self,
-            InitResources.self,
-            InitInfoPlist.self,
+            PlatformCommand.self,
+            ResourcesCommand.self,
+            InfoPlistCommand.self,
             OrientationCommand.self
         ]
     )

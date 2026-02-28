@@ -2,10 +2,18 @@ import Foundation
 import ArgumentParser
 import PlaygroundsAppToolLibrary
 
-/// `init-info-plist` CLI command implementation
+/// `info-plist` parent command
+struct InfoPlistCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "info-plist",
+        abstract: "Manage Info.plist files linked to the application product.",
+        subcommands: [InitInfoPlist.self]
+    )
+}
+
 struct InitInfoPlist: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "init-info-plist",
+        commandName: "init",
         abstract: "Initializes an Info.plist file and links it into the Package.swift app product."
     )
 
