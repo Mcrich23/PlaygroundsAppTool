@@ -293,6 +293,11 @@ public extension PackageSwiftFile {
     ///   - version: The version string (e.g. `"17.0"`).
     /// - Throws: `PlatformEditorError` on parse failures.
     mutating func setMinimumPlatform(_ platform: PackagePlatform, version: String) async throws {
+        guard let float = Float(version) else {
+            throw VersionErrors.invalidVersionString(version)
+        }
+        let version = String(float)
+        
         let syntaxToRewrite = self.syntax
         let rewritten = await Task {
             let rewriter = SetMinimumPlatformRewriter(platform: platform, version: version)

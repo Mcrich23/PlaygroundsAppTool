@@ -157,6 +157,11 @@ public extension PackageSwiftFile {
     /// Modifies or inserts the `swiftLanguageVersions` array using `SetSwiftVersionRewriter`
     /// and updates the `// swift-tools-version:` comment header.
     mutating func setSwiftVersion(_ version: String) async throws {
+        guard let float = Float(version) else {
+            throw VersionErrors.invalidVersionString(version)
+        }
+        let version = String(float)
+        
         let syntaxToRewrite = self.syntax
         
         let rewritten = await Task {
@@ -168,4 +173,8 @@ public extension PackageSwiftFile {
         }.value
         apply(rewritten: rewritten)
     }
+}
+
+enum VersionErrors: Error {
+    case invalidVersionString(String)
 }

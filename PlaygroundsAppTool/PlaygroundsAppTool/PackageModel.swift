@@ -88,9 +88,9 @@ public final class PackageModel {
     }
     
     public func saveSwiftVersion(_ version: String) async {
-        guard var file = packageFile, let float = Float(version) else { return }
+        guard var file = packageFile else { return }
         do {
-            try await file.setSwiftVersion(String(float))
+            try await file.setSwiftVersion(version)
             try await file.write()
             self.packageFile = file
             try await refresh()
