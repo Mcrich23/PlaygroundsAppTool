@@ -9,15 +9,13 @@ struct InitResources: AsyncParsableCommand {
         abstract: "Initializes a Resources directory and hooks it into Package.swift for a specific target."
     )
 
-    @Option(name: .shortAndLong, help: "The path to the .swiftpm project directory.")
-    var project: String
+    @OptionGroup var options: ToolOptions
 
-    @Option(name: .shortAndLong, help: "The target name to inject resources into.")
+    @Option(name: .shortAndLong, help: "The target name to interact with.")
     var target: String = "AppModule"
 
     mutating func run() async throws {
-        let projectURL = URL(fileURLWithPath: project)
-        let packageURL = projectURL.appendingPathComponent("Package.swift")
+        let packageURL = options.packagePath
         
         guard FileManager.default.fileExists(atPath: packageURL.path) else {
             print("Error: Could not find Package.swift at \(packageURL.path)")
@@ -39,7 +37,11 @@ struct InitResources: AsyncParsableCommand {
         try await packageFile.write()
         
         // Create the physical Resources folder
-        let resourcesURL = projectURL.appendingPathComponent("Resources")
+        // For standard swiftpm, Resources is usually inside the target folder, but for simple playgrounds,
+        // it may be at the project root or a subpath depending on path arguments.
+        // We'll place it in the same directory as the Package.swift.
+        let projectRootURL = packageURL.deletingLastPathComponent()
+        let resourcesURL = projectRootURL.appendingPathComponent("Resources")
         if !FileManager.default.fileExists(atPath: resourcesURL.path) {
             print("Creating Resources directory at \(resourcesURL.path)...")
             try FileManager.default.createDirectory(at: resourcesURL, withIntermediateDirectories: true)

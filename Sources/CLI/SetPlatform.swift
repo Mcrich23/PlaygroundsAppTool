@@ -9,8 +9,7 @@ struct SetPlatform: AsyncParsableCommand {
         abstract: "Sets the minimum platform version in a Swift Playground's Package.swift."
     )
 
-    @Option(name: .shortAndLong, help: "The path to the .swiftpm project directory or Package.swift file.")
-    var project: String
+    @OptionGroup var options: ToolOptions
 
     @Argument(help: "The platform to target (e.g. iOS, macOS, tvOS, watchOS, visionOS).")
     var platform: String
@@ -24,10 +23,10 @@ struct SetPlatform: AsyncParsableCommand {
             throw ExitCode.failure
         }
 
-        let projectURL = URL(fileURLWithPath: project)
-        print("Loading Package.swift at \(projectURL.path)...")
+        let packageURL = options.packagePath
+        print("Loading Package.swift at \(packageURL.path)...")
         
-        var packageFile = try await PackageSwiftFile.load(fromProject: projectURL)
+        var packageFile = try await PackageSwiftFile.load(from: packageURL)
         
         print("Setting minimum platform \(packagePlatform.rawValue) to \(version)...")
         try await packageFile.setMinimumPlatform(packagePlatform, version: version)
