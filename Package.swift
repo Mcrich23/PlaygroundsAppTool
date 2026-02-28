@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "PlaygroundsAppTool",
     platforms: [
-        .macOS(.v12)
+        .macOS(.v10_15)
     ],
     products: [
         .library(name: "PlaygroundsAppToolLibrary", targets: ["PlaygroundsAppToolLibrary"]),
