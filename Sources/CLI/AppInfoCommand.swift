@@ -122,10 +122,10 @@ struct SetAccentColorCommand: AsyncParsableCommand {
 
     @OptionGroup var options: ToolOptions
 
-    @Option(name: .shortAndLong, help: "Preset color (e.g. blue, red).")
+    @Option(name: .long, help: "Preset color (e.g. blue, red).")
     var preset: PresetColor?
 
-    @Option(name: .shortAndLong, help: "Asset name (e.g. AccentColor).")
+    @Option(name: .long, help: "Asset name (e.g. AccentColor).")
     var asset: String?
 
     mutating func run() async throws {
