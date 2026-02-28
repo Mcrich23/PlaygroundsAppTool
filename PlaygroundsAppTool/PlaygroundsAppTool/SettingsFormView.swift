@@ -34,6 +34,140 @@ struct BasicInfoView: View {
                 ))
             }
             
+            Section(header: Text("Appearance & Category")) {
+                let appCategories = [
+                    ("None", ""),
+                    ("Books", "books"),
+                    ("Business", "business"),
+                    ("Developer Tools", "developerTools"),
+                    ("Education", "education"),
+                    ("Entertainment", "entertainment"),
+                    ("Finance", "finance"),
+                    ("Food & Drink", "foodAndDrink"),
+                    ("Games", "games"),
+                    ("Games - Action Games", "actionGames"),
+                    ("Games - Adventure Games", "adventureGames"),
+                    ("Games - Board Games", "boardGames"),
+                    ("Games - Card Games", "cardGames"),
+                    ("Games - Casino Games", "casinoGames"),
+                    ("Games - Casual Games", "casualGames"),
+                    ("Games - Family Games", "familyGames"),
+                    ("Games - Kids Games", "kidsGames"),
+                    ("Games - Music Games", "musicGames"),
+                    ("Games - Puzzle Games", "puzzleGames"),
+                    ("Games - Racing Games", "racingGames"),
+                    ("Games - Role Playing Games", "rolePlayingGames"),
+                    ("Games - Simulation Games", "simulationGames"),
+                    ("Games - Sports Games", "sportsGames"),
+                    ("Games - Strategy Games", "strategyGames"),
+                    ("Games - Trivia Games", "triviaGames"),
+                    ("Games - Word Games", "wordGames"),
+                    ("Graphics & Design", "graphicsAndDesign"),
+                    ("Health & Fitness", "healthAndFitness"),
+                    ("Lifestyle", "lifestyle"),
+                    ("Magazines & Newspapers", "magazinesAndNewspapers"),
+                    ("Medical", "medical"),
+                    ("Music", "music"),
+                    ("Navigation", "navigation"),
+                    ("News", "news"),
+                    ("Photography", "photography"),
+                    ("Productivity", "productivity"),
+                    ("Reference", "reference"),
+                    ("Shopping", "shopping"),
+                    ("Social Networking", "socialNetworking"),
+                    ("Sports", "sports"),
+                    ("Travel", "travel"),
+                    ("Utilities", "utilities"),
+                    ("Video", "video"),
+                    ("Weather", "weather")
+                ]
+                
+                Picker("App Category", selection: Binding(
+                    get: { model.appInfo.appCategory ?? "" },
+                    set: { model.appInfo.appCategory = $0.isEmpty ? nil : $0 }
+                )) {
+                    ForEach(appCategories, id: \.1) { (label, value) in
+                        Text(label).tag(value)
+                    }
+                }
+                
+                Picker("Accent Color Type", selection: Binding(
+                    get: {
+                        if let color = model.appInfo.accentColor {
+                            if case .presetColor = color { return "Preset" }
+                        }
+                        return "Asset"
+                    },
+                    set: { newType in
+                        if newType == "Asset" {
+                            model.appInfo.accentColor = .asset("AccentColor")
+                        } else if newType == "Preset" {
+                            model.appInfo.accentColor = .presetColor("blue")
+                        }
+                    }
+                )) {
+                    Text("Asset Name").tag("Asset")
+                    Text("Preset Color").tag("Preset")
+                }
+                
+                if let color = model.appInfo.accentColor {
+                    if case .asset(let name) = color {
+                        TextField("Asset Name", text: Binding(
+                            get: { name },
+                            set: { model.appInfo.accentColor = .asset($0) }
+                        ))
+                    } else if case .presetColor(let name) = color {
+                        let presetColors = [
+                            ("Red", "red"),
+                            ("Orange", "orange"),
+                            ("Yellow", "yellow"),
+                            ("Green", "green"),
+                            ("Mint", "mint"),
+                            ("Teal", "teal"),
+                            ("Cyan", "cyan"),
+                            ("Blue", "blue"),
+                            ("Indigo", "indigo"),
+                            ("Purple", "purple"),
+                            ("Pink", "pink"),
+                            ("Brown", "brown")
+                        ]
+                        
+                        Picker("Preset Color", selection: Binding(
+                            get: { name },
+                            set: { model.appInfo.accentColor = .presetColor($0) }
+                        )) {
+                            ForEach(presetColors, id: \.1) { (label, value) in
+                                HStack {
+                                    // A simple circle to roughly approximate the color in UI
+                                    Circle()
+                                        .fill(colorForPreset(value))
+                                        .frame(width: 12, height: 12)
+                                    Text(label)
+                                }.tag(value)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Section(header: Text("Supported Device Families")) {
+                let families = ["phone", "pad", "mac"]
+                ForEach(families, id: \.self) { family in
+                    Toggle(family.capitalized, isOn: Binding(
+                        get: { model.appInfo.supportedDeviceFamilies.contains(family) },
+                        set: { isEnabled in
+                            if isEnabled {
+                                if !model.appInfo.supportedDeviceFamilies.contains(family) {
+                                    model.appInfo.supportedDeviceFamilies.append(family)
+                                }
+                            } else {
+                                model.appInfo.supportedDeviceFamilies.removeAll { $0 == family }
+                            }
+                        }
+                    ))
+                }
+            }
+            
             if let error = model.errorMessage {
                 Text(error)
                     .foregroundStyle(.red)
@@ -120,6 +254,14 @@ struct OrientationView: View {
         "landscapeRight"
     ]
     
+    func formattedOrientationName(_ name: String) -> String {
+        guard let first = name.first, !name.isEmpty else {
+            return name
+        }
+        
+        return String(first).capitalized + name.dropFirst()
+    }
+    
     var body: some View {
         Form {
             Section(header: Text("Supported Interface Orientations")) {
@@ -142,7 +284,7 @@ struct OrientationView: View {
                     let isPadOnly = isEnabled && conditionLabel == " (Pad Only)"
                     let isPhoneOnly = isEnabled && conditionLabel == " (Phone Only)"
                     
-                    Toggle(orientation.capitalized + conditionLabel, isOn: Binding(
+                    Toggle(formattedOrientationName(orientation) + conditionLabel, isOn: Binding(
                         get: { isEnabled },
                         set: { _ in
                             Task {
@@ -214,5 +356,25 @@ struct CapabilitiesView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Capabilities")
+    }
+}
+
+// MARK: - Helpers
+
+func colorForPreset(_ name: String) -> Color {
+    switch name {
+    case "red": return .red
+    case "orange": return .orange
+    case "yellow": return .yellow
+    case "green": return .green
+    case "mint": return .mint
+    case "teal": return .teal
+    case "cyan": return .cyan
+    case "blue": return .blue
+    case "indigo": return .indigo
+    case "purple": return .purple
+    case "pink": return .pink
+    case "brown": return .brown
+    default: return .clear
     }
 }

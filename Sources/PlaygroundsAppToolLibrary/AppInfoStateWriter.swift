@@ -60,12 +60,64 @@ public final class AppInfoStateWriter: SyntaxRewriter {
                 }
             }
         }
+
+        func updateArgWithExpr(label: String, exprString: String?) {
+            let existingIdx = args.firstIndex { $0.label?.text == label }
+            
+            if let newValue = exprString, !newValue.isEmpty {
+                let parsedStmt = Parser.parse(source: newValue).statements.first!.item
+                let expr = parsedStmt.as(ExprSyntax.self)!
+                if let idx = existingIdx {
+                    args[idx] = args[idx].with(\.expression, expr).with(\.trailingComma, nil)
+                } else {
+                    let newArg = LabeledExprSyntax(
+                        label: .identifier(label),
+                        colon: .colonToken(trailingTrivia: .space),
+                        expression: expr,
+                        trailingComma: nil
+                    )
+                    args.append(newArg)
+                }
+            } else {
+                if let idx = existingIdx {
+                    args.remove(at: idx)
+                }
+            }
+        }
         
         updateArg(label: "name", stringValue: appInfo.name)
         updateArg(label: "id", altLabels: ["bundleIdentifier"], stringValue: appInfo.id)
         updateArg(label: "teamIdentifier", stringValue: appInfo.teamIdentifier)
         updateArg(label: "displayVersion", altLabels: ["version"], stringValue: appInfo.displayVersion)
         updateArg(label: "bundleVersion", altLabels: ["buildNumber"], stringValue: appInfo.bundleVersion)
+
+        let iconExprStr: String? = appInfo.iconAssetName.map { ".asset(\"\($0)\")" }
+        updateArgWithExpr(label: "appIcon", exprString: iconExprStr)
+
+        let accentColorExprStr: String?
+        if let color = appInfo.accentColor {
+            switch color {
+            case .asset(let name):
+                accentColorExprStr = ".asset(\"\(name)\")"
+            case .presetColor(let name):
+                accentColorExprStr = ".presetColor(.\(name))"
+            }
+        } else {
+            accentColorExprStr = nil
+        }
+        updateArgWithExpr(label: "accentColor", exprString: accentColorExprStr)
+
+        let familiesExprStr: String?
+        if !appInfo.supportedDeviceFamilies.isEmpty {
+            let families = appInfo.supportedDeviceFamilies.map { ".\($0)" }.joined(separator: ", ")
+            familiesExprStr = "[\(families)]"
+        } else {
+            familiesExprStr = nil
+        }
+        updateArgWithExpr(label: "supportedDeviceFamilies", exprString: familiesExprStr)
+
+        let categoryExprStr: String? = appInfo.appCategory.map { ".\($0)" }
+        updateArgWithExpr(label: "appCategory", exprString: categoryExprStr)
         
         // Fix up trailing commas and trivia for a clean look
         for i in 0..<args.count {

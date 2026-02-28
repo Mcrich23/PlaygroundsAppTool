@@ -48,7 +48,7 @@ struct AddOrientation: AsyncParsableCommand {
         
         var orientationString = orientation
         if pad && phone {
-            orientationString += "(.when(deviceFamilies: [.pad, .phone]))"
+            // Do nothing because all device families are allowed
         } else if pad {
             orientationString += "(.when(deviceFamilies: [.pad]))"
         } else if phone {

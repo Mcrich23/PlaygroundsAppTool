@@ -2,6 +2,11 @@ import Foundation
 import SwiftSyntax
 import SwiftParser
 
+public enum AppColor: Sendable, Equatable {
+    case asset(String)
+    case presetColor(String)
+}
+
 public struct AppInfo: Sendable, Equatable {
     public var name: String?
     public var id: String?
@@ -9,7 +14,9 @@ public struct AppInfo: Sendable, Equatable {
     public var displayVersion: String?
     public var bundleVersion: String?
     public var iconAssetName: String?
-    public var accentColorAssetName: String?
+    public var accentColor: AppColor?
+    public var supportedDeviceFamilies: [String] = []
+    public var appCategory: String?
     public var hasInfoPlist: Bool = false
     
     public init() {}
@@ -51,9 +58,30 @@ public final class AppInfoReaderVisitor: SyntaxVisitor {
                 }
             case "accentColor":
                 if let callExpr = arg.expression.as(FunctionCallExprSyntax.self),
-                   let memberAccess = callExpr.calledExpression.as(MemberAccessExprSyntax.self),
-                   memberAccess.declName.baseName.text == "asset" {
-                    appInfo.accentColorAssetName = callExpr.arguments.first?.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue
+                   let memberAccess = callExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+                    if memberAccess.declName.baseName.text == "asset" {
+                        if let name = callExpr.arguments.first?.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue {
+                            appInfo.accentColor = .asset(name)
+                        }
+                    } else if memberAccess.declName.baseName.text == "presetColor" {
+                        if let innerMember = callExpr.arguments.first?.expression.as(MemberAccessExprSyntax.self) {
+                            appInfo.accentColor = .presetColor(innerMember.declName.baseName.text)
+                        }
+                    }
+                }
+            case "supportedDeviceFamilies":
+                if let arrayExpr = arg.expression.as(ArrayExprSyntax.self) {
+                    var families: [String] = []
+                    for element in arrayExpr.elements {
+                        if let memberAccess = element.expression.as(MemberAccessExprSyntax.self) {
+                            families.append(memberAccess.declName.baseName.text)
+                        }
+                    }
+                    appInfo.supportedDeviceFamilies = families
+                }
+            case "appCategory":
+                if let memberAccess = arg.expression.as(MemberAccessExprSyntax.self) {
+                    appInfo.appCategory = memberAccess.declName.baseName.text
                 }
             case "additionalInfoPlistContentFilePath", "infoPlist":
                 appInfo.hasInfoPlist = true
