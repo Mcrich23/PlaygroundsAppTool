@@ -52,7 +52,11 @@ public final class AppInfoStateWriter: SyntaxRewriter {
                         expression: expr,
                         trailingComma: nil
                     )
-                    args.append(newArg)
+                    if let insertIdx = args.firstIndex(where: { $0.label?.text == "additionalInfoPlistContentFilePath" || $0.label?.text == "infoPlist" }) {
+                        args.insert(newArg, at: insertIdx)
+                    } else {
+                        args.append(newArg)
+                    }
                 }
             } else {
                 if let idx = existingIdx {
@@ -76,7 +80,11 @@ public final class AppInfoStateWriter: SyntaxRewriter {
                         expression: expr,
                         trailingComma: nil
                     )
-                    args.append(newArg)
+                    if let insertIdx = args.firstIndex(where: { $0.label?.text == "additionalInfoPlistContentFilePath" || $0.label?.text == "infoPlist" }) {
+                        args.insert(newArg, at: insertIdx)
+                    } else {
+                        args.append(newArg)
+                    }
                 }
             } else {
                 if let idx = existingIdx {
