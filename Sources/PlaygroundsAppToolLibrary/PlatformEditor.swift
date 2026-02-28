@@ -7,10 +7,6 @@ import SwiftParser
 /// Supported Swift Package Manager platform identifiers.
 public enum PackagePlatform: String, CaseIterable, Sendable {
     case iOS
-    case macOS
-    case tvOS
-    case watchOS
-    case visionOS
 
     /// The member expression name used in `PackageDescription` (e.g. `.iOS("17.0")`).
     public var memberName: String { rawValue }

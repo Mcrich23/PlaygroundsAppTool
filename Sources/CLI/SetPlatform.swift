@@ -8,7 +8,7 @@ struct PlatformCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "platform",
         abstract: "Manage platform requirements for a Swift Playground.",
-        subcommands: [SetPlatform.self, RemovePlatform.self]
+        subcommands: [SetPlatform.self]
     )
 }
 
@@ -20,53 +20,21 @@ struct SetPlatform: AsyncParsableCommand {
 
     @OptionGroup var options: ToolOptions
 
-    @Argument(help: "The platform to target (e.g. iOS, macOS, tvOS, watchOS, visionOS).")
-    var platform: String
-
-    @Argument(help: "The minimum version to set (e.g. 17.0).")
+    @Argument(help: "The minimum iOS version to set (e.g. 17.0).")
     var version: String
 
     mutating func run() async throws {
-        guard let packagePlatform = PackagePlatform(rawValue: platform) else {
-            print("Error: '\(platform)' is not a valid platform. Valid options: \(PackagePlatform.allCases.map(\.rawValue).joined(separator: ", "))")
-            throw ExitCode.failure
-        }
-
         let packageURL = options.packagePath
         print("Loading Package.swift at \(packageURL.path)...")
         
         var packageFile = try await PackageSwiftFile.load(from: packageURL)
         
-        print("Setting minimum platform \(packagePlatform.rawValue) to \(version)...")
-        try await packageFile.setMinimumPlatform(packagePlatform, version: version)
+        print("Setting minimum platform iOS to \(version)...")
+        try await packageFile.setMinimumPlatform(.iOS, version: version)
         
         print("Saving changes...")
         try await packageFile.write()
         
         print("Success! Updated the platform version.")
-    }
-}
-
-struct RemovePlatform: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(
-        commandName: "remove",
-        abstract: "Removes a specific platform requirement from Package.swift."
-    )
-
-    @OptionGroup var options: ToolOptions
-
-    @Argument(help: "The platform to remove (e.g. iOS, macOS, tvOS, watchOS, visionOS).")
-    var platform: String
-
-    mutating func run() async throws {
-        let packageURL = options.packagePath
-        print("Loading Package.swift at \(packageURL.path)...")
-        var packageFile = try await PackageSwiftFile.load(from: packageURL)
-        
-        print("Removing platform \(platform)...")
-        try await packageFile.removePlatform(platform)
-        
-        try await packageFile.write()
-        print("Success!")
     }
 }

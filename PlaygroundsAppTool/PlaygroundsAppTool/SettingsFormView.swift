@@ -72,20 +72,13 @@ struct PlatformView: View {
                             ))
                             .labelsHidden()
                             .multilineTextAlignment(.trailing)
-                            
-                            Button(role: .destructive) {
-                                Task { await model.removePlatform(platform) }
-                            } label: {
-                                Image(systemName: "trash")
-                            }
                         } else {
                             Text(platform.rawValue)
                                 .foregroundStyle(.secondary)
                             Spacer()
                             Button("Add") {
                                 Task {
-                                    // Default minimal version, can easily be changed later
-                                    let defaultVersion = platform == .iOS ? "16.0" : "1.0"
+                                    let defaultVersion = "16.0"
                                     await model.setPlatform(platform, version: defaultVersion)
                                 }
                             }
