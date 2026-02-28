@@ -142,10 +142,24 @@ public final class PackageModel {
             if hasResources {
                 try await file.removeResources()
             } else {
+                // Create the physical Resources folder
+                // For standard swiftpm, Resources is usually inside the target folder, but for simple playgrounds,
+                // it may be at the project root or a subpath depending on path arguments.
+                // We'll place it in the same directory as the Package.swift.
+                let projectRootURL = file.url.deletingLastPathComponent()
+                let resourcesURL = projectRootURL.appendingPathComponent("Resources")
+                if !FileManager.default.fileExists(atPath: resourcesURL.path) {
+                    print("Creating Resources directory at \(resourcesURL.path)...")
+                    try FileManager.default.createDirectory(at: resourcesURL, withIntermediateDirectories: true)
+                } else {
+                    print("Resources directory already exists.")
+                }
+                
                 try await file.initResources()
             }
             try await file.write()
             self.packageFile = file
+            
             try await refresh()
             self.errorMessage = nil
         } catch {
