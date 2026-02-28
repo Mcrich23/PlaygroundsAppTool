@@ -2,7 +2,6 @@ import Foundation
 import SwiftUI
 import PlaygroundsAppToolLibrary
 
-@MainActor
 @Observable
 public final class PackageModel {
     public var packageFile: PackageSwiftFile?
@@ -23,6 +22,11 @@ public final class PackageModel {
     
     public func load(from url: URL) async {
         do {
+            self.packageURL?.stopAccessingSecurityScopedResource()
+            let accessGranted = url.startAccessingSecurityScopedResource()
+            if !accessGranted {
+                print("Failed to gain security scoped access to \(url)")
+            }
             self.packageURL = url
             let file = try await PackageSwiftFile.load(fromProject: url)
             self.packageFile = file
@@ -146,5 +150,9 @@ public final class PackageModel {
         } catch {
             self.errorMessage = "Failed to toggle Info.plist: \(error.localizedDescription)"
         }
+    }
+
+    deinit {
+        packageURL?.stopAccessingSecurityScopedResource()
     }
 }
