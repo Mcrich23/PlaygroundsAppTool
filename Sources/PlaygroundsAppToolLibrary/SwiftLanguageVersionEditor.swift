@@ -69,40 +69,6 @@ public final class SetSwiftVersionRewriter: SyntaxRewriter {
     }
 }
 
-/// A `SyntaxRewriter` that removes the `swiftLanguageVersions:` argument
-/// entirely from the top-level `Package(…)` call.
-public final class RemoveSwiftVersionRewriter: SyntaxRewriter {
-    private var foundPackageCall = false
-
-    public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        guard isToplevelPackageCall(node) else {
-            return super.visit(node)
-        }
-        foundPackageCall = true
-
-        let args = node.arguments
-        
-        var remainingArgs = args.filter { arg in
-            arg.label?.text != "swiftLanguageVersions"
-        }
-        
-        if let last = remainingArgs.last {
-            let lastIndex = remainingArgs.index(before: remainingArgs.endIndex)
-            remainingArgs[lastIndex] = last.with(\.trailingComma, nil)
-        }
-
-        return ExprSyntax(node.with(\.arguments, LabeledExprListSyntax(remainingArgs)))
-    }
-
-    private func isToplevelPackageCall(_ node: FunctionCallExprSyntax) -> Bool {
-        if let identifier = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           identifier.baseName.text == "Package" {
-            return true
-        }
-        return false
-    }
-}
-
 /// A `SyntaxRewriter` that modifies the first token's leading trivia to update the `swift-tools-version` comment.
 public final class SetSwiftToolsVersionRewriter: SyntaxRewriter {
     public let version: String
@@ -157,17 +123,6 @@ public extension PackageSwiftFile {
             
             let rewriter = SetSwiftVersionRewriter(version: version)
             return rewriter.visit(withToolsVersion).as(SourceFileSyntax.self)!
-        }.value
-        apply(rewritten: rewritten)
-    }
-
-    /// Removes the `swiftLanguageVersions` argument using `RemoveSwiftVersionRewriter`.
-    mutating func removeSwiftVersion() async throws {
-        let syntaxToRewrite = self.syntax
-        
-        let rewritten = await Task {
-            let rewriter = RemoveSwiftVersionRewriter()
-            return rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
         }.value
         apply(rewritten: rewritten)
     }

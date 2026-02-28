@@ -47,12 +47,6 @@ Manage the `swiftLanguageVersions` array and `// swift-tools-version:` comment a
   # Example: PlaygroundsAppTool swift-version set 6.0
   ```
 
-- **Remove Swift Version**
-  Removes the `swiftLanguageVersions` property entirely from the root `Package` declaration.
-  ```bash
-  PlaygroundsAppTool swift-version remove
-  ```
-
 ### Resources
 
 Easily link a `Resources` folder to your target.
