@@ -231,7 +231,7 @@ public extension PackageSwiftFile {
         
         let result = await Task {
             let rewriter = OrientationRewriter(mutation: mutation)
-            let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            let rewritten = rewriter.visit(syntaxToRewrite)
             return (
                 foundApp: rewriter.foundAppProduct,
                 foundArg: rewriter.foundOrientationsArgument,

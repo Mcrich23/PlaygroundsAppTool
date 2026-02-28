@@ -235,9 +235,61 @@ public final class RemovePlatformRewriter: SyntaxRewriter {
     }
 }
 
+// MARK: - Visitor (List Platforms)
+
+/// A `SyntaxVisitor` that extracts the `platforms: [...]` argument of the top-level `Package(...)` call.
+public final class GetPlatformsVisitor: SyntaxVisitor {
+    public private(set) var platforms: [PackagePlatform: String] = [:]
+    private var foundPackageCall = false
+
+    public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard isToplevelPackageCall(node) else {
+            return .visitChildren
+        }
+        guard !foundPackageCall else { return .skipChildren }
+        foundPackageCall = true
+
+        if let platformsArg = node.arguments.first(where: { $0.label?.text == "platforms" }),
+           let arrayExpr = platformsArg.expression.as(ArrayExprSyntax.self) {
+            for element in arrayExpr.elements {
+                if let callExpr = element.expression.as(FunctionCallExprSyntax.self),
+                   let memberAccess = callExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+                    let platformName = memberAccess.declName.baseName.text
+                    let version = callExpr.arguments.first?.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue ?? ""
+                    if let pkgPlatform = PackagePlatform(rawValue: platformName) {
+                        platforms[pkgPlatform] = version
+                    }
+                } else if let memberAccess = element.expression.as(MemberAccessExprSyntax.self) {
+                    let platformName = memberAccess.declName.baseName.text
+                    if let pkgPlatform = PackagePlatform(rawValue: platformName) {
+                        platforms[pkgPlatform] = ""
+                    }
+                }
+            }
+        }
+        
+        return .skipChildren
+    }
+
+    private func isToplevelPackageCall(_ node: FunctionCallExprSyntax) -> Bool {
+        guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self) else { return false }
+        return callee.baseName.text == "Package"
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
+    /// Gets the current platform minimums configured in the Package.swift.
+    func getPlatforms() async throws -> [PackagePlatform: String] {
+        let syntaxToRead = self.syntax
+        return await Task {
+            let visitor = GetPlatformsVisitor(viewMode: .sourceAccurate)
+            visitor.walk(syntaxToRead)
+            return visitor.platforms
+        }.value
+    }
+
     /// Sets the minimum SDK version for `platform` in the parsed Package.swift.
     ///
     /// - Parameters:

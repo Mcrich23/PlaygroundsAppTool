@@ -109,9 +109,51 @@ public final class SetSwiftToolsVersionRewriter: SyntaxRewriter {
     }
 }
 
+// MARK: - Visitor (Get Version)
+
+/// A `SyntaxVisitor` that extracts the `swiftLanguageVersions` argument.
+public final class GetSwiftVersionVisitor: SyntaxVisitor {
+    public private(set) var swiftVersion: String?
+    private var foundPackageCall = false
+
+    public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard isToplevelPackageCall(node) else {
+            return .visitChildren
+        }
+        guard !foundPackageCall else { return .skipChildren }
+        foundPackageCall = true
+
+        if let arg = node.arguments.first(where: { $0.label?.text == "swiftLanguageVersions" }),
+           let arrayExpr = arg.expression.as(ArrayExprSyntax.self),
+           let firstElement = arrayExpr.elements.first,
+           let callExpr = firstElement.expression.as(FunctionCallExprSyntax.self),
+           let memberAccess = callExpr.calledExpression.as(MemberAccessExprSyntax.self),
+           memberAccess.declName.baseName.text == "version" {
+            swiftVersion = callExpr.arguments.first?.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue
+        }
+        
+        return .skipChildren
+    }
+
+    private func isToplevelPackageCall(_ node: FunctionCallExprSyntax) -> Bool {
+        guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self) else { return false }
+        return callee.baseName.text == "Package"
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
+    /// Gets the currently configured Swift language version.
+    func getSwiftVersion() async throws -> String? {
+        let syntaxToRead = self.syntax
+        return await Task {
+            let visitor = GetSwiftVersionVisitor(viewMode: .sourceAccurate)
+            visitor.walk(syntaxToRead)
+            return visitor.swiftVersion
+        }.value
+    }
+
     /// Modifies or inserts the `swiftLanguageVersions` array using `SetSwiftVersionRewriter`
     /// and updates the `// swift-tools-version:` comment header.
     mutating func setSwiftVersion(_ version: String) async throws {
@@ -119,10 +161,10 @@ public extension PackageSwiftFile {
         
         let rewritten = await Task {
             let toolsRewriter = SetSwiftToolsVersionRewriter(version: version)
-            let withToolsVersion = toolsRewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            let withToolsVersion = toolsRewriter.visit(syntaxToRewrite)
             
             let rewriter = SetSwiftVersionRewriter(version: version)
-            return rewriter.visit(withToolsVersion).as(SourceFileSyntax.self)!
+            return rewriter.visit(withToolsVersion)
         }.value
         apply(rewritten: rewritten)
     }

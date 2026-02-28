@@ -156,16 +156,62 @@ public final class RemoveTargetResourcesRewriter: SyntaxRewriter {
     }
 }
 
+// MARK: - Visitor (Check Resources)
+
+/// A `SyntaxVisitor` that checks if the `resources` argument exists.
+public final class HasTargetResourcesVisitor: SyntaxVisitor {
+    public let targetName: String
+    public private(set) var hasResources: Bool = false
+    private var foundTarget = false
+
+    public init(targetName: String = "AppModule", viewMode: SyntaxTreeViewMode = .sourceAccurate) {
+        self.targetName = targetName
+        super.init(viewMode: viewMode)
+    }
+
+    public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+              (memberAccess.declName.baseName.text == "target" || memberAccess.declName.baseName.text == "executableTarget") else {
+            return .visitChildren
+        }
+
+        guard node.arguments.contains(where: {
+            $0.label?.text == "name" &&
+            $0.expression.as(StringLiteralExprSyntax.self)?.representedLiteralValue == targetName
+        }) else {
+            return .visitChildren
+        }
+
+        foundTarget = true
+
+        if node.arguments.contains(where: { $0.label?.text == "resources" }) {
+            hasResources = true
+        }
+
+        return .skipChildren
+    }
+}
+
 // MARK: - Convenience Entry Point
 
 public extension PackageSwiftFile {
+    /// Checks if the target has a `resources: [.process("Resources")]` argument.
+    func hasResources(targetName: String = "AppModule") async throws -> Bool {
+        let syntaxToRead = self.syntax
+        return await Task {
+            let visitor = HasTargetResourcesVisitor(targetName: targetName, viewMode: .sourceAccurate)
+            visitor.walk(syntaxToRead)
+            return visitor.hasResources
+        }.value
+    }
+
     /// Injects `resources: [.process("Resources")]` into the target mapping to `targetName`.
     mutating func initResources(targetName: String = "AppModule") async throws {
         let syntaxToRewrite = self.syntax
         
         let result = await Task {
             let rewriter = TargetResourcesEditor(targetName: targetName)
-            let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            let rewritten = rewriter.visit(syntaxToRewrite)
             return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
         }.value
 
@@ -182,7 +228,7 @@ public extension PackageSwiftFile {
         
         let result = await Task {
             let rewriter = RemoveTargetResourcesRewriter(targetName: targetName)
-            let rewritten = rewriter.visit(syntaxToRewrite).as(SourceFileSyntax.self)!
+            let rewritten = rewriter.visit(syntaxToRewrite)
             return (didApplyPatch: rewriter.didApplyPatch, rewritten: rewritten)
         }.value
 
