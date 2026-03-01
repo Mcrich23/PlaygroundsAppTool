@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		225E3F2E2F5285C10077916C /* PlaygroundsAppToolLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */; };
+		225E3FEC2F53CCC20077916C /* PlaygroundsAppToolLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 225E3FEB2F53CCC20077916C /* PlaygroundsAppToolLibrary */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				225E3F2E2F5285C10077916C /* PlaygroundsAppToolLibrary in Frameworks */,
+				225E3FEC2F53CCC20077916C /* PlaygroundsAppToolLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = PlaygroundsAppTool;
 			packageProductDependencies = (
 				225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */,
+				225E3FEB2F53CCC20077916C /* PlaygroundsAppToolLibrary */,
 			);
 			productName = PlaygroundsAppTool;
 			productReference = 225E3F1E2F5285AC0077916C /* PlaygroundsAppTool.app */;
@@ -91,7 +94,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 225E3F192F5285AC0077916C /* Build configuration list for PBXProject "PlaygroundsAppTool" */;
+			buildConfigurationList = 225E3F192F5285AC0077916C /* Build configuration list for PBXProject "App" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -101,7 +104,7 @@
 			mainGroup = 225E3F152F5285AC0077916C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				225E3F2C2F5285C10077916C /* XCLocalSwiftPackageReference "../../PlaygroundsAppTool" */,
+				225E3FEA2F53CCC20077916C /* XCLocalSwiftPackageReference "../PlaygroundsAppTool" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 225E3F1F2F5285AC0077916C /* Products */;
@@ -343,7 +346,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		225E3F192F5285AC0077916C /* Build configuration list for PBXProject "PlaygroundsAppTool" */ = {
+		225E3F192F5285AC0077916C /* Build configuration list for PBXProject "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				225E3F272F5285AD0077916C /* Debug */,
@@ -364,14 +367,18 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		225E3F2C2F5285C10077916C /* XCLocalSwiftPackageReference "../../PlaygroundsAppTool" */ = {
+		225E3FEA2F53CCC20077916C /* XCLocalSwiftPackageReference "../PlaygroundsAppTool" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../PlaygroundsAppTool;
+			relativePath = ../PlaygroundsAppTool;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlaygroundsAppToolLibrary;
+		};
+		225E3FEB2F53CCC20077916C /* PlaygroundsAppToolLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlaygroundsAppToolLibrary;
 		};
