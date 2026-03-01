@@ -1,0 +1,59 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.38039,0.33333,0.96078,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "box_left_face.svg",
+          "name" : "box_left_face"
+        },
+        {
+          "glass" : false,
+          "image-name" : "box_lid_panel.svg",
+          "name" : "box_lid_panel"
+        },
+        {
+          "glass" : false,
+          "image-name" : "box_lid_top.svg",
+          "name" : "box_lid_top"
+        },
+        {
+          "blend-mode" : "normal",
+          "fill" : "automatic",
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "box_right_face.svg",
+          "name" : "box_right_face"
+        },
+        {
+          "fill" : "automatic",
+          "glass" : false,
+          "image-name" : "hammer.svg",
+          "name" : "hammer"
+        },
+        {
+          "glass" : false,
+          "image-name" : "circle_badge.svg",
+          "name" : "circle_badge"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
