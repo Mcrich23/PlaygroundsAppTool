@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		222664072F65179200706701 /* PlaygroundsAppToolLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 222664062F65179200706701 /* PlaygroundsAppToolLibrary */; };
 		225E3F2E2F5285C10077916C /* PlaygroundsAppToolLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */; };
 		225E3FEC2F53CCC20077916C /* PlaygroundsAppToolLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = 225E3FEB2F53CCC20077916C /* PlaygroundsAppToolLibrary */; };
 /* End PBXBuildFile section */
@@ -30,6 +31,7 @@
 			files = (
 				225E3F2E2F5285C10077916C /* PlaygroundsAppToolLibrary in Frameworks */,
 				225E3FEC2F53CCC20077916C /* PlaygroundsAppToolLibrary in Frameworks */,
+				222664072F65179200706701 /* PlaygroundsAppToolLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */,
 				225E3FEB2F53CCC20077916C /* PlaygroundsAppToolLibrary */,
+				222664062F65179200706701 /* PlaygroundsAppToolLibrary */,
 			);
 			productName = PlaygroundsAppTool;
 			productReference = 225E3F1E2F5285AC0077916C /* PlaygroundsAppTool.app */;
@@ -104,7 +107,7 @@
 			mainGroup = 225E3F152F5285AC0077916C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				225E3FEA2F53CCC20077916C /* XCLocalSwiftPackageReference "../PlaygroundsAppTool" */,
+				222664052F65179200706701 /* XCLocalSwiftPackageReference "./" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 225E3F1F2F5285AC0077916C /* Products */;
@@ -371,13 +374,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		225E3FEA2F53CCC20077916C /* XCLocalSwiftPackageReference "../PlaygroundsAppTool" */ = {
+		222664052F65179200706701 /* XCLocalSwiftPackageReference "./" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../PlaygroundsAppTool;
+			relativePath = ./;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		222664062F65179200706701 /* PlaygroundsAppToolLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PlaygroundsAppToolLibrary;
+		};
 		225E3F2D2F5285C10077916C /* PlaygroundsAppToolLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PlaygroundsAppToolLibrary;
