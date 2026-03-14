@@ -206,7 +206,7 @@ else
     latest_git_commit=$(git rev-parse HEAD)
     
     # Tag the commit
-    git tag -a "v$version($build_number)" -m ""
+    git tag -a "$version($build_number)" -m ""
     git push
     git push --tags
 
