@@ -5,6 +5,7 @@ project="App.xcodeproj"
 target="PlaygroundsAppTool"
 branch="beta"  # Default branch
 dry_run=false  # Default dry run setting
+build_number_provided=false
 
 # Function to get the version number from the Xcode project
 getVersion() {
@@ -128,45 +129,68 @@ cleanup_temp_directory() {
 }
 
 # Parse command-line arguments
-while getopts "b:v:d-:" opt; do
-    case "${opt}" in
-        -)
-            case "${OPTARG}" in
-                branch=*)
-                    branch="${OPTARG#*=}"
-                    ;;
-                build-number=*)
-                    build_number="${OPTARG#*=}"
-                    build_number_provided=true
-                    ;;
-                build=*)
-                    build_number="${OPTARG#*=}"
-                    build_number_provided=true
-                    ;;
-                version=*)
-                    new_version="${OPTARG#*=}"
-                    ;;
-                dry-run)
-                    dry_run=true
-                    ;;
-                *)
-                    echo "Invalid option: --${OPTARG}" >&2
-                    echo "Usage: $0 [-b branch] [-v version] [--build build-number] [-d]" >&2
-                    exit 1
-                    ;;
-            esac
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -b)
+            branch="$2"
+            shift 2
             ;;
-        b)
-            branch="$OPTARG"
+        --branch)
+            branch="$2"
+            shift 2
             ;;
-        v)
-            new_version="$OPTARG"
+        --branch=*)
+            branch="${1#*=}"
+            shift
             ;;
-        d)
+        -v)
+            new_version="$2"
+            shift 2
+            ;;
+        --version)
+            new_version="$2"
+            shift 2
+            ;;
+        --version=*)
+            new_version="${1#*=}"
+            shift
+            ;;
+        --build)
+            build_number="$2"
+            build_number_provided=true
+            shift 2
+            ;;
+        --build=*)
+            build_number="${1#*=}"
+            build_number_provided=true
+            shift
+            ;;
+        --build-number)
+            build_number="$2"
+            build_number_provided=true
+            shift 2
+            ;;
+        --build-number=*)
+            build_number="${1#*=}"
+            build_number_provided=true
+            shift
+            ;;
+        -d|--dry-run)
             dry_run=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "Invalid option: $1" >&2
+            echo "Usage: $0 [-b branch] [-v version] [--build build-number] [-d]" >&2
+            exit 1
             ;;
         *)
-            echo "Usage: $0 [-b branch] [-v version] [--build] [-d]" >&2
+            echo "Unexpected argument: $1" >&2
+            echo "Usage: $0 [-b branch] [-v version] [--build build-number] [-d]" >&2
             exit 1
             ;;
     esac
@@ -206,7 +230,7 @@ else
     latest_git_commit=$(git rev-parse HEAD)
     
     # Tag the commit
-    git tag -a "v$version($build_number)" -m ""
+    git tag -a "$version($build_number)" -m ""
     git push
     git push --tags
 
