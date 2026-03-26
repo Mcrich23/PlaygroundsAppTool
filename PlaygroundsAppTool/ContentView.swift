@@ -57,7 +57,7 @@ struct ContentView: View {
                     Text("PlaygroundsAppTool")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                    Text("Manage Swift Playgrounds Projects")
+                    Text("Manage Your Projects Better Than Ever!")
                         .foregroundStyle(.secondary)
                     
                     Button("Open Project") {
